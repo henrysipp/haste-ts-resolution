@@ -1,0 +1,25 @@
+{
+  "name": "haste-ts-plugin",
+  "version": "0.1.0",
+  "description": "TypeScript language service plugin for Haste module resolution",
+  "main": "index.js",
+  "type": "commonjs",
+  "keywords": [
+    "typescript",
+    "tsserver",
+    "haste",
+    "module-resolution",
+    "plugin"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "peerDependencies": {
+    "typescript": ">=5"
+  },
+  "scripts": {
+    "check": "node -e \"require('./index.js')({ typescript: require('typescript') }); console.log('plugin-load-ok')\""
+  }
+}

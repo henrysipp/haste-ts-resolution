@@ -1,0 +1,9 @@
+{
+  "name": "haste-ts-plugin-example",
+  "private": true,
+  "version": "0.0.0",
+  "devDependencies": {
+    "haste-ts-plugin": "file:..",
+    "typescript": "^5.9.2"
+  }
+}

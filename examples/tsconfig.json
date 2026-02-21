@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "plugins": [
+      {
+        "name": "haste-ts-plugin",
+        "rootDir": "./src",
+        "strategy": ["filename"],
+        "platforms": ["ios", "android", "native", "web"],
+        "indexAsPackage": true
+      }
+    ]
+  },
+  "include": ["src"]
+}
