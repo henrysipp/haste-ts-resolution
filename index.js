@@ -3,10 +3,6 @@ const path = require('path');
 
 /**
  * TypeScript language service plugin that resolves Haste-style module names.
- *
- * Supported strategies:
- * - @providesModule docblocks
- * - filename-based module names
  */
 function init(modules) {
   const ts = modules.typescript;
@@ -268,32 +264,15 @@ function buildModuleIndex(info, config, logger) {
       continue;
     }
 
-    const moduleNames = [];
-
-    if (config.strategy.providesModule) {
-      const fromDocblock = readProvidesModule(filePath, config.providesModuleTag);
-      if (fromDocblock) {
-        moduleNames.push(fromDocblock);
-      }
-    }
-
-    if (config.strategy.filename) {
-      const fromFilename = moduleNameFromFilename(filePath, config.indexAsPackage);
-      if (fromFilename) {
-        moduleNames.push(fromFilename);
-      }
-    }
-
-    if (moduleNames.length === 0) {
+    const moduleName = moduleNameFromFilename(filePath, config.indexAsPackage);
+    if (!moduleName) {
       continue;
     }
 
     const parsed = parsePlatform(filePath, config.platforms);
-    for (const moduleName of dedupe(moduleNames)) {
-      const candidates = index.get(moduleName) || [];
-      candidates.push({ filePath, platform: parsed.platform });
-      index.set(moduleName, candidates);
-    }
+    const candidates = index.get(moduleName) || [];
+    candidates.push({ filePath, platform: parsed.platform });
+    index.set(moduleName, candidates);
   }
 
   detectAndLogCollisions(index, logger);
@@ -387,23 +366,6 @@ function shouldIndexFile(filePath, config) {
   return config.extensions.some((ext) => normalized.endsWith(ext));
 }
 
-function readProvidesModule(filePath, tag) {
-  const fs = require('fs');
-
-  let text;
-  try {
-    text = fs.readFileSync(filePath, 'utf8');
-  } catch (_) {
-    return undefined;
-  }
-
-  const head = text.slice(0, 4096);
-  const escapedTag = escapeRegex(tag);
-  const pattern = new RegExp(`@${escapedTag}\\s+([A-Za-z0-9_./$-]+)`);
-  const match = head.match(pattern);
-  return match ? match[1] : undefined;
-}
-
 function moduleNameFromFilename(filePath, indexAsPackage) {
   const normalized = normalizeSlashes(filePath);
   const parts = normalized.split('/');
@@ -435,21 +397,8 @@ function normalizeConfig(rawConfig, projectDir) {
     platforms: Array.isArray(rawConfig.platforms) && rawConfig.platforms.length > 0
       ? rawConfig.platforms
       : ['ios', 'android', 'native', 'web'],
-    providesModuleTag: rawConfig.providesModuleTag || 'providesModule',
-    indexAsPackage: rawConfig.indexAsPackage !== false,
-    strategy: {
-      providesModule: false,
-      filename: true
-    }
+    indexAsPackage: rawConfig.indexAsPackage !== false
   };
-
-  if (Array.isArray(rawConfig.strategy) && rawConfig.strategy.length > 0) {
-    config.strategy.providesModule = rawConfig.strategy.includes('providesModule');
-    config.strategy.filename = rawConfig.strategy.includes('filename');
-  } else if (typeof rawConfig.strategy === 'string') {
-    config.strategy.providesModule = rawConfig.strategy === 'providesModule' || rawConfig.strategy === 'both';
-    config.strategy.filename = rawConfig.strategy === 'filename' || rawConfig.strategy === 'both';
-  }
 
   config.rootDir = normalizeSlashes(config.rootDir);
   return config;
@@ -523,14 +472,6 @@ function getLogger(info) {
 
 function normalizeSlashes(filePath) {
   return filePath.replace(/\\/g, '/');
-}
-
-function dedupe(items) {
-  return Array.from(new Set(items));
-}
-
-function escapeRegex(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function formatError(error) {

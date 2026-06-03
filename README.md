@@ -10,10 +10,7 @@ Resolves bare imports like:
 import Button from 'Button';
 ```
 
-to project files using one or both strategies:
-
-- Filename-based module names
-- `@providesModule` docblocks (optional)
+to project files using filename-based module names.
 
 This affects **TypeScript editor services** (`tsserver`) only. Your runtime/bundler resolver (Metro/Jest/Babel/etc.) still needs matching Haste behavior.
 
@@ -36,7 +33,6 @@ In your `tsconfig.json`:
       {
         "name": "haste-ts-plugin",
         "rootDir": ".",
-        "strategy": ["filename"],
         "platforms": ["ios", "android", "native", "web"],
         "indexAsPackage": true
       }
@@ -48,28 +44,11 @@ In your `tsconfig.json`:
 ## Plugin Options
 
 - `rootDir`: Base directory to index. Default: project root.
-- `strategy`: One of:
-  - `"providesModule"`
-  - `"filename"`
-  - `"both"`
-  - array form, e.g. `["providesModule", "filename"]`
 - `platforms`: Platform priority list for files like `Button.ios.ts`.
 - `extensions`: File extensions to index.
 - `indexAsPackage`: If true, `Foo/index.ts` maps to `Foo`.
-- `providesModuleTag`: Docblock tag name. Default: `providesModule`.
 
-`filename` mode maps module names from filenames, e.g. `src/components/Button.ts` resolves for `import ... from 'Button'`.
-
-## Example `@providesModule`
-
-```ts
-/**
- * @providesModule Button
- */
-export const Button = () => null;
-```
-
-Then this resolves in editor diagnostics/intellisense:
+Module names are mapped from filenames, e.g. `src/components/Button.ts` resolves for:
 
 ```ts
 import { Button } from 'Button';

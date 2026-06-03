@@ -20,6 +20,7 @@
     "typescript": ">=5"
   },
   "scripts": {
-    "check": "node -e \"require('./index.js')({ typescript: require('typescript') }); console.log('plugin-load-ok')\""
+    "check": "node -e \"require('./index.js')({ typescript: require('typescript') }); console.log('plugin-load-ok')\"",
+    "test": "node test/index.test.js"
   }
 }

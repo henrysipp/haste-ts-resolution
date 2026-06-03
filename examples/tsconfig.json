@@ -9,7 +9,6 @@
       {
         "name": "haste-ts-plugin",
         "rootDir": "./src",
-        "strategy": ["filename"],
         "platforms": ["ios", "android", "native", "web"],
         "indexAsPackage": true
       }
