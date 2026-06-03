@@ -4,6 +4,12 @@
   "description": "TypeScript language service plugin for Haste module resolution",
   "main": "index.js",
   "type": "commonjs",
+  "files": [
+    "index.js",
+    "examples/src/**/*.ts",
+    "examples/tsconfig.json",
+    "examples/package.json"
+  ],
   "keywords": [
     "typescript",
     "tsserver",
@@ -11,16 +17,28 @@
     "module-resolution",
     "plugin"
   ],
-  "author": "",
+  "author": "Henry Sipp <henry.sipp@hey.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/henrysipp/haste-ts-resolution.git"
+  },
+  "bugs": {
+    "url": "https://github.com/henrysipp/haste-ts-resolution/issues"
+  },
+  "homepage": "https://github.com/henrysipp/haste-ts-resolution#readme",
   "engines": {
     "node": ">=18"
   },
   "peerDependencies": {
     "typescript": ">=5"
   },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  },
   "scripts": {
     "check": "node -e \"require('./index.js')({ typescript: require('typescript') }); console.log('plugin-load-ok')\"",
+    "prepublishOnly": "yarn test && yarn check",
     "test": "node test/index.test.js"
   }
 }

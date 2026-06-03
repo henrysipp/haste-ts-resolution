@@ -17,7 +17,7 @@ This affects **TypeScript editor services** (`tsserver`) only. Your runtime/bund
 ## Install
 
 ```bash
-npm install
+yarn add -D haste-ts-plugin
 ```
 
 This package is self-contained (no runtime dependencies).
@@ -32,7 +32,8 @@ In your `tsconfig.json`:
     "plugins": [
       {
         "name": "haste-ts-plugin",
-        "rootDir": ".",
+        "rootDir": "./src",
+        "excludeDirs": ["app"],
         "platforms": ["ios", "android", "native", "web"],
         "indexAsPackage": true
       }
@@ -44,6 +45,7 @@ In your `tsconfig.json`:
 ## Plugin Options
 
 - `rootDir`: Base directory to index. Default: project root.
+- `excludeDirs`: Directories under `rootDir` to skip, e.g. `["app"]` excludes `src/app` when `rootDir` is `./src`.
 - `platforms`: Platform priority list for files like `Button.ios.ts`.
 - `extensions`: File extensions to index.
 - `indexAsPackage`: If true, `Foo/index.ts` maps to `Foo`.
@@ -58,6 +60,7 @@ import { Button } from 'Button';
 
 - Collisions are logged to the TypeScript server log.
 - If multiple candidates exist, platform-specific files are prioritized based on `platforms` and the importing file platform.
+- TypeScript compiler plugins in `compilerOptions.plugins` are language-service plugins only. They improve editor/tsserver diagnostics but are ignored by `tsc`, so `yarn tsc --noEmit` still needs matching `paths` mappings or another patched typecheck runner.
 
 ## Quick Try (Editor)
 

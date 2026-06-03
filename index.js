@@ -357,9 +357,13 @@ function shouldIndexFile(filePath, config) {
     return false;
   }
 
-  const normalized = normalizeSlashes(filePath);
-  const root = normalizeSlashes(config.rootDir);
-  if (!normalized.startsWith(root)) {
+  const normalized = stripTrailingSlash(normalizeSlashes(filePath));
+  const root = stripTrailingSlash(normalizeSlashes(config.rootDir));
+  if (!isPathInsideOrEqual(normalized, root)) {
+    return false;
+  }
+
+  if (config.excludeDirs.some((dir) => isPathInsideOrEqual(normalized, dir))) {
     return false;
   }
 
@@ -397,10 +401,11 @@ function normalizeConfig(rawConfig, projectDir) {
     platforms: Array.isArray(rawConfig.platforms) && rawConfig.platforms.length > 0
       ? rawConfig.platforms
       : ['ios', 'android', 'native', 'web'],
+    excludeDirs: normalizeExcludeDirs(rawConfig.excludeDirs, absoluteRootDir),
     indexAsPackage: rawConfig.indexAsPackage !== false
   };
 
-  config.rootDir = normalizeSlashes(config.rootDir);
+  config.rootDir = stripTrailingSlash(normalizeSlashes(config.rootDir));
   return config;
 }
 
@@ -468,6 +473,27 @@ function getLogger(info) {
   return {
     info: function noop() {}
   };
+}
+
+function normalizeExcludeDirs(excludeDirs, rootDir) {
+  if (!Array.isArray(excludeDirs)) {
+    return [];
+  }
+
+  return excludeDirs
+    .filter((dir) => typeof dir === 'string' && dir.trim())
+    .map((dir) => {
+      const absolute = path.isAbsolute(dir) ? dir : path.join(rootDir, dir);
+      return stripTrailingSlash(normalizeSlashes(absolute));
+    });
+}
+
+function isPathInsideOrEqual(filePath, directory) {
+  return filePath === directory || filePath.startsWith(directory + '/');
+}
+
+function stripTrailingSlash(filePath) {
+  return filePath.replace(/\/+$/, '');
 }
 
 function normalizeSlashes(filePath) {

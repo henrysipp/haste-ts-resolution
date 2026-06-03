@@ -88,6 +88,27 @@ test('maps package index files to the parent directory name by default', () => {
   assert.equal(result.resolvedModule.resolvedFileName, packageIndexPath);
 });
 
+test('excludes configured directories from the Haste index', () => {
+  const excludedScreenPath = file('app/Button.ts');
+  const appPath = file('App.ts');
+  const host = createHost({
+    scripts: [appPath, excludedScreenPath],
+    resolveModuleNameLiterals: (moduleLiterals) => moduleLiterals.map(() => ({ resolvedModule: undefined }))
+  });
+
+  createPlugin({
+    host,
+    config: {
+      rootDir,
+      excludeDirs: ['app']
+    }
+  });
+
+  const [result] = host.resolveModuleNameLiterals([{ text: 'Button' }], appPath);
+
+  assert.equal(result.resolvedModule, undefined);
+});
+
 test('keeps existing TypeScript module resolutions', () => {
   const buttonPath = file('components/Button.ts');
   const appPath = file('App.ts');
