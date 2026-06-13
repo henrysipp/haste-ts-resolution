@@ -2,10 +2,12 @@
   "name": "haste-ts-plugin",
   "version": "0.1.0",
   "description": "TypeScript language service plugin for Haste module resolution",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "type": "commonjs",
   "files": [
-    "index.js",
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
     "examples/src/**/*.ts",
     "examples/tsconfig.json",
     "examples/package.json"
@@ -33,12 +35,17 @@
   "peerDependencies": {
     "typescript": ">=5"
   },
+  "dependencies": {
+    "metro-file-map": "^0.82.0"
+  },
   "devDependencies": {
+    "@types/node": "^22.15.21",
     "typescript": "^5.9.3"
   },
   "scripts": {
-    "check": "node -e \"require('./index.js')({ typescript: require('typescript') }); console.log('plugin-load-ok')\"",
+    "build": "tsc -p tsconfig.json",
+    "check": "yarn build && node -e \"require('./dist/index.js')({ typescript: require('typescript') }); console.log('plugin-load-ok')\"",
     "prepublishOnly": "yarn test && yarn check",
-    "test": "node test/index.test.js"
+    "test": "yarn build && node test/index.test.js"
   }
 }

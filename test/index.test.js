@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const path = require('node:path');
 const { test } = require('node:test');
 const ts = require('typescript');
-const init = require('../index');
+const init = require('../dist');
 
 const rootDir = normalize('/tmp/haste-ts-plugin/src');
 
@@ -27,17 +27,31 @@ test('resolves bare imports by filename through resolveModuleNameLiterals', () =
   });
 });
 
-test('ignores providesModule config and docblocks', () => {
-  const actualPath = file('components/ActualName.ts');
+test('does not treat test files as the same module name as the source file', () => {
+  const modulePath = file('utils/format.ts');
+  const testPath = file('utils/format.test.ts');
   const appPath = file('App.ts');
   const host = createHost({
-    scripts: [appPath, actualPath],
-    readFile: () => [
-      '/**',
-      ' * @providesModule LegacyName',
-      ' */',
-      'export const value = 1;'
-    ].join('\n'),
+    scripts: [appPath, modulePath, testPath],
+    resolveModuleNameLiterals: (moduleLiterals) => moduleLiterals.map(() => ({ resolvedModule: undefined }))
+  });
+
+  createPlugin({ host });
+
+  const [moduleResult] = host.resolveModuleNameLiterals([{ text: 'format' }], appPath);
+  const [testResult] = host.resolveModuleNameLiterals([{ text: 'format.test' }], appPath);
+
+  assert.equal(moduleResult.resolvedModule.resolvedFileName, modulePath);
+  assert.equal(testResult.resolvedModule.resolvedFileName, testPath);
+});
+
+test('indexes only configured platform qualifiers as variants of the base module', () => {
+  const defaultPath = file('components/Panel.ts');
+  const webPath = file('components/Panel.web.ts');
+  const storiesPath = file('components/Panel.stories.ts');
+  const appPath = file('App.web.ts');
+  const host = createHost({
+    scripts: [appPath, defaultPath, webPath, storiesPath],
     resolveModuleNameLiterals: (moduleLiterals) => moduleLiterals.map(() => ({ resolvedModule: undefined }))
   });
 
@@ -45,16 +59,15 @@ test('ignores providesModule config and docblocks', () => {
     host,
     config: {
       rootDir,
-      strategy: ['providesModule'],
-      providesModuleTag: 'providesModule'
+      platforms: ['web']
     }
   });
 
-  const [legacyResult] = host.resolveModuleNameLiterals([{ text: 'LegacyName' }], appPath);
-  const [filenameResult] = host.resolveModuleNameLiterals([{ text: 'ActualName' }], appPath);
+  const [panelResult] = host.resolveModuleNameLiterals([{ text: 'Panel' }], appPath);
+  const [storiesResult] = host.resolveModuleNameLiterals([{ text: 'Panel.stories' }], appPath);
 
-  assert.equal(legacyResult.resolvedModule, undefined);
-  assert.equal(filenameResult.resolvedModule.resolvedFileName, actualPath);
+  assert.equal(panelResult.resolvedModule.resolvedFileName, webPath);
+  assert.equal(storiesResult.resolvedModule.resolvedFileName, storiesPath);
 });
 
 test('prefers the importing file platform when multiple filename candidates exist', () => {

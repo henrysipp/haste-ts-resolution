@@ -49,6 +49,9 @@ In your `tsconfig.json`:
 - `platforms`: Platform priority list for files like `Button.ios.ts`.
 - `extensions`: File extensions to index.
 - `indexAsPackage`: If true, `Foo/index.ts` maps to `Foo`.
+- `hasteImplModulePath`: Optional path to the same `getHasteName` module used in `metro.config.js`. Defaults to Metro/jest-haste-map's filename-based naming via the bundled default haste impl.
+
+Module indexing and platform lookup use `metro-file-map`'s `HastePlugin`, matching Metro's Haste map behavior. Only configured platform suffixes (e.g. `.ios`, `.web`) collapse to the base module name; other dotted names like `format.test.ts` become their own Haste modules.
 
 Module names are mapped from filenames, e.g. `src/components/Button.ts` resolves for:
 
